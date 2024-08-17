@@ -1,0 +1,11 @@
+name: JoinTP
+version: '1.0-SNAPSHOT'
+main: psn.yllq.JoinTP
+api-version: '1.17'
+commands:
+  jointp:
+    description: "Main command"
+    permission: jt.main
+    aliases:
+      - jt
+      - jtp
