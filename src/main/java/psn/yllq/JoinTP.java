@@ -8,6 +8,10 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.entity.Player;
 
+import java.util.Objects;
+
+import static org.bukkit.Bukkit.getPluginCommand;
+
 public class JoinTP extends JavaPlugin implements Listener {
 
     //创建全局变量
@@ -17,7 +21,7 @@ public class JoinTP extends JavaPlugin implements Listener {
     public void onEnable() {
         // 注册事件监听器
         Bukkit.getPluginManager().registerEvents(this, this);
-        Bukkit.getPluginCommand("jointp").setExecutor(new MainCommands());
+        Objects.requireNonNull(getPluginCommand("jointp")).setExecutor(new MainCommands());
 
         //生成配置文件
         saveDefaultConfig();
