@@ -2,57 +2,99 @@ package psn.yllq;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.event.EventHandler;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.event.EventHandler;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
+public class JoinTP extends JavaPlugin implements Listener, CommandExecutor {
 
-import static org.bukkit.Bukkit.getPluginCommand;
-
-public class JoinTP extends JavaPlugin implements Listener {
-
-    //创建全局变量
-    static JoinTP main;
+    private Location targetLocation;
 
     @Override
     public void onEnable() {
+        // 保存默认配置（如果配置文件不存在，将会生成默认配置）
+        this.saveDefaultConfig();
+
+        // 从配置文件中加载传送目标位置
+        loadLocationFromConfig();
+
         // 注册事件监听器
-        Bukkit.getPluginManager().registerEvents(this, this);
-        Objects.requireNonNull(getPluginCommand("jointp")).setExecutor(new MainCommands());
+        if (targetLocation != null) {
+            Bukkit.getPluginManager().registerEvents(this, this);
+        } else {
+            getLogger().severe("请设置JoinTP的目标坐标点！");
+            // 尝试停止服务器
+            Bukkit.getScheduler().runTask(this, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "stop"));
+        }
 
-        //生成配置文件
-        saveDefaultConfig();
+        // 注册命令
+        PluginCommand command = this.getCommand("jointp");
+        if (command != null) {
+            command.setExecutor(this);
+        } else {
+            getLogger().severe("未能注册命令 '/jointp'，请检查 plugin.yml 文件配置！");
+        }
 
-        //设置全局变量
-        main = this;
+        // 打印插件加载成功的消息
+        getLogger().info("JoinTP 插件已启用！");
+    }
+
+    @Override
+    public void onDisable() {
+        // 打印插件卸载的消息
+        getLogger().info("JoinTP 插件已禁用！");
+    }
+
+    private void loadLocationFromConfig() {
+        FileConfiguration config = this.getConfig();
+
+        String worldName = config.getString("teleport.world");
+        if (worldName == null || !config.contains("teleport.x") || !config.contains("teleport.y") || !config.contains("teleport.z")) {
+            targetLocation = null;
+        } else {
+            double x = config.getDouble("teleport.x");
+            double y = config.getDouble("teleport.y");
+            double z = config.getDouble("teleport.z");
+            float yaw = (float) config.getDouble("teleport.yaw", 0.0);
+            float pitch = (float) config.getDouble("teleport.pitch", 0.0);
+
+            targetLocation = new Location(Bukkit.getWorld(worldName), x, y, z, yaw, pitch);
+        }
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
+        if (targetLocation != null) {
+            Player player = event.getPlayer();
 
-        // 指定坐标和世界
-        double x = 0.0; // X坐标
-        double y = 51.0;  // Y坐标
-        double z = 0.0; // Z坐标
-        String worldName = "world"; // 世界名称
-        float yaw = 0.0f;
-        float pitch = 0.0f;
+            // 延迟传送玩家，确保玩家已完全加载
+            Bukkit.getScheduler().runTaskLater(this, () -> player.teleport(targetLocation), 20L); // 延迟20 tick（1秒）
+        }
+    }
 
-        // 延迟执行传送操作
-        Bukkit.getScheduler().runTaskLater(this, () -> {
-            // 获取目标世界
-            org.bukkit.World world = Bukkit.getWorld(worldName);
-            if (world != null) {
-                // 创建目标位置
-                Location location = new Location(world, x, y, z, yaw, pitch);
-
-                // 传送玩家
-                player.teleport(location);
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (command.getName().equalsIgnoreCase("jointp")) {
+            if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
+                // 重新加载配置文件
+                this.reloadConfig();
+                loadLocationFromConfig();
+                if (targetLocation == null) {
+                    sender.sendMessage("JoinTP 配置缺少必要的传送坐标，请设置后重试！");
+                } else {
+                    sender.sendMessage("JoinTP 配置已重新加载！");
+                }
+                return true;
             }
-        }, 1); // 延迟 1 个游戏刻度（20 毫秒）执行传送操作
+        }
+        return false;
     }
 }

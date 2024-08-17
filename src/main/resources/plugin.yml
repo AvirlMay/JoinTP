@@ -1,11 +1,10 @@
 name: JoinTP
-version: '${project.version}'
+version: "${project.version}"
 main: psn.yllq.JoinTP
-api-version: '1.17'
+api-version: 1.17
+description: A plugin to teleport players on join.
+
 commands:
   jointp:
-    description: "Main command"
-    permission: jt.main
-    aliases:
-      - jt
-      - jtp
+    description: Reload JoinTP plugin configuration.
+    usage: /<command> reload

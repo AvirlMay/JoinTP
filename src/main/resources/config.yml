@@ -1,6 +1,7 @@
-x: 0.0
-y: 80.0
-z: 0.0
-yaw: 0.0f
-pitch: 0.0f
-worldname: "world"
+teleport:
+  world: "world"  # 世界名称，必须填写
+  x:  # X坐标，必须填写
+  y:  # Y坐标，必须填写
+  z:  # Z坐标，必须填写
+  yaw: 0.0  # Yaw 角度，默认值为0.0
+  pitch: 0.0  # Pitch 角度，默认值为0.0
