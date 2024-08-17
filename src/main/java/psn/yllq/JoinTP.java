@@ -31,10 +31,12 @@ public class JoinTP extends JavaPlugin implements Listener {
         Player player = event.getPlayer();
 
         // 指定坐标和世界
-        double x = JoinTP.main.getConfig().getDouble("x"); // X坐标
-        double y = JoinTP.main.getConfig().getDouble("y");  // Y坐标
-        double z = JoinTP.main.getConfig().getDouble("z"); // Z坐标
-        String worldName = JoinTP.main.getConfig().getString("worldname"); // 世界名称
+        double x = 0.0; // X坐标
+        double y = 51.0;  // Y坐标
+        double z = 0.0; // Z坐标
+        String worldName = "world"; // 世界名称
+        float yaw = 0.0f;
+        float pitch = 0.0f;
 
         // 延迟执行传送操作
         Bukkit.getScheduler().runTaskLater(this, () -> {
@@ -42,7 +44,7 @@ public class JoinTP extends JavaPlugin implements Listener {
             org.bukkit.World world = Bukkit.getWorld(worldName);
             if (world != null) {
                 // 创建目标位置
-                Location location = new Location(world, x, y, z);
+                Location location = new Location(world, x, y, z, yaw, pitch);
 
                 // 传送玩家
                 player.teleport(location);
